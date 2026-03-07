@@ -156,7 +156,7 @@ export function RoadmapGenerator() {
                                             border: '1px solid rgba(255,255,255,0.08)'
                                         }}>
                                             <div style={{ fontWeight: 'bold', marginBottom: '1rem', color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
-                                                Week {week.id}: {week.title}
+                                                Week {week.id}: {week.title.replace(/^week\s*\d+\s*[:-]?\s*/i, '')}
                                             </div>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                                 {week.days && week.days.length > 0 ? (

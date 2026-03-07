@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clock, BookOpen, AlertCircle, Target, CheckCircle } from 'lucide-react';
+import { Clock, BookOpen, AlertCircle, Target, CheckCircle, Trash2, X } from 'lucide-react';
 
 // Time-based mock data
 const MOCK_TIME_SCHEDULE = [
@@ -21,31 +21,113 @@ const MOCK_TASK_LIST = [
 
 export function TimetableChart() {
     const [mode, setMode] = useState('time'); // 'time' or 'task'
-    const [schedule] = useState(MOCK_TIME_SCHEDULE);
-    const [tasks] = useState(MOCK_TASK_LIST);
+    const [schedule, setSchedule] = useState(MOCK_TIME_SCHEDULE);
+    const [tasks, setTasks] = useState(MOCK_TASK_LIST);
+
+    // Form states for Time-Based
+    const [isAddingTime, setIsAddingTime] = useState(false);
+    const [newTimeTask, setNewTimeTask] = useState('');
+    const [newTimeHour, setNewTimeHour] = useState(12);
+
+    // Form states for Task-Based
+    const [isAddingTask, setIsAddingTask] = useState(false);
+    const [newTaskName, setNewTaskName] = useState('');
+    const [newTaskSubject, setNewTaskSubject] = useState('');
+    const [newTaskPriority, setNewTaskPriority] = useState('medium');
+
+    const handleAddTimeTask = () => {
+        if (!newTimeTask.trim()) return;
+        const newTask = {
+            id: Date.now(),
+            hour: parseInt(newTimeHour),
+            task: newTimeTask,
+            duration: 1,
+            type: "math", // Default type
+            status: "scheduled"
+        };
+        // Remove existing task at that hour if any to prevent overlaps
+        setSchedule(prev => [...prev.filter(t => t.hour !== newTask.hour), newTask].sort((a, b) => a.hour - b.hour));
+        setNewTimeTask('');
+        setIsAddingTime(false);
+    };
+
+    const handleRemoveTimeTask = (id, e) => {
+        if (e) e.stopPropagation();
+        setSchedule(prev => prev.filter(t => t.id !== id));
+    };
+
+    const toggleTimeStatus = (id) => {
+        setSchedule(prev => prev.map(t => {
+            if (t.id === id) {
+                const nextStatus = t.status === 'scheduled' ? 'completed' : t.status === 'completed' ? 'missed' : 'scheduled';
+                return { ...t, status: nextStatus };
+            }
+            return t;
+        }));
+    };
+
+    const handleAddGoalTask = () => {
+        if (!newTaskName.trim()) return;
+        const newTask = {
+            id: Date.now(),
+            task: newTaskName,
+            subject: newTaskSubject || "General",
+            priority: newTaskPriority,
+            status: "pending"
+        };
+        setTasks(prev => [...prev, newTask]);
+        setNewTaskName('');
+        setNewTaskSubject('');
+        setNewTaskPriority('medium');
+        setIsAddingTask(false);
+    };
+
+    const handleRemoveGoalTask = (id, e) => {
+        if (e) e.stopPropagation();
+        setTasks(prev => prev.filter(t => t.id !== id));
+    };
+
+    const toggleGoalTaskStatus = (id) => {
+        setTasks(prev => prev.map(t => {
+            if (t.id === id) {
+                const nextStatus = t.status === 'pending' ? 'in-progress' : t.status === 'in-progress' ? 'completed' : 'pending';
+                return { ...t, status: nextStatus };
+            }
+            return t;
+        }));
+    };
 
     const hours = Array.from({ length: 17 }, (_, i) => i + 6);
 
     const getTaskForHour = (hour) => schedule.find(item => item.hour === hour);
 
-    const getStatusColor = (status, type) => {
-        if (status === 'completed') return 'rgba(0, 243, 255, 0.2)';
-        if (status === 'missed') return 'rgba(255, 100, 100, 0.2)';
-        if (type === 'break') return 'rgba(138, 43, 226, 0.2)';
-        return 'rgba(255, 255, 255, 0.05)';
+    const getThemeForId = (id) => {
+        const palettes = [
+            { bg: 'rgba(15, 45, 80, 0.8)', border: 'rgba(0, 150, 255, 0.6)', text: '#4da6ff' }, // Blue
+            { bg: 'rgba(35, 15, 60, 0.8)', border: 'rgba(138, 43, 226, 0.6)', text: '#d8b4fe' }, // Purple
+            { bg: 'rgba(60, 30, 10, 0.8)', border: 'rgba(255, 140, 0, 0.6)', text: '#ffb347' }, // Brown
+        ];
+        const safeId = id || 0;
+        return palettes[safeId % 3];
     };
 
-    const getStatusBorder = (status, type) => {
-        if (status === 'completed') return '1px solid rgba(0, 243, 255, 0.5)';
-        if (status === 'missed') return '1px solid rgba(255, 100, 100, 0.5)';
-        if (type === 'break') return '1px solid rgba(138, 43, 226, 0.5)';
-        return '1px solid rgba(255, 255, 255, 0.1)';
+    const getStatusColor = (status, type, id) => {
+        if (status === 'completed') return 'rgba(10, 60, 65, 0.8)';
+        if (status === 'missed') return 'rgba(70, 25, 25, 0.8)';
+        return getThemeForId(id).bg;
     };
 
-    const getTaskStatusColor = (status) => {
-        if (status === 'completed') return { bg: 'rgba(0, 243, 255, 0.15)', border: 'rgba(0, 243, 255, 0.4)', text: '#00f3ff' };
-        if (status === 'in-progress') return { bg: 'rgba(138, 43, 226, 0.15)', border: 'rgba(138, 43, 226, 0.4)', text: '#d8b4fe' };
-        return { bg: 'rgba(255, 255, 255, 0.05)', border: 'rgba(255, 255, 255, 0.1)', text: 'var(--color-text-secondary)' };
+    const getStatusBorder = (status, type, id) => {
+        if (status === 'completed') return '1px solid rgba(0, 243, 255, 0.6)';
+        if (status === 'missed') return '1px solid #ff6464';
+        return `1px solid ${getThemeForId(id).border}`;
+    };
+
+    const getTaskStatusColor = (status, id) => {
+        if (status === 'completed') return { bg: 'rgba(10, 60, 65, 0.8)', border: 'rgba(0, 243, 255, 0.6)', text: '#00f3ff' };
+        const theme = getThemeForId(id);
+        if (status === 'in-progress') return { bg: theme.bg, border: `2px solid ${theme.border}`, text: theme.text };
+        return { bg: theme.bg, border: `1px solid ${theme.border}`, text: 'var(--color-text-secondary)' };
     };
 
     const getPriorityTag = (priority) => {
@@ -133,9 +215,10 @@ export function TimetableChart() {
                                 <div style={{ flex: 1 }}>
                                     {task ? (
                                         <div
+                                            onClick={() => toggleTimeStatus(task.id)}
                                             style={{
-                                                backgroundColor: getStatusColor(task.status, task.type),
-                                                border: getStatusBorder(task.status, task.type),
+                                                backgroundColor: getStatusColor(task.status, task.type, task.id),
+                                                border: getStatusBorder(task.status, task.type, task.id),
                                                 padding: '1rem',
                                                 borderRadius: '8px',
                                                 display: 'flex',
@@ -143,7 +226,8 @@ export function TimetableChart() {
                                                 gap: '1rem',
                                                 minHeight: `${Math.max(3, task.duration * 3)}rem`,
                                                 position: 'relative',
-                                                overflow: 'hidden'
+                                                overflow: 'hidden',
+                                                cursor: 'pointer'
                                             }}
                                         >
                                             {task.status === 'completed' && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '4px', backgroundColor: 'var(--color-intelligence-cyan)' }} />}
@@ -161,6 +245,53 @@ export function TimetableChart() {
                                                     {task.duration} hr block • {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
                                                 </div>
                                             </div>
+
+                                            <div style={{ marginLeft: 'auto' }}>
+                                                <button
+                                                    onClick={(e) => handleRemoveTimeTask(task.id, e)}
+                                                    style={{
+                                                        background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px',
+                                                        color: 'rgba(255,255,255,0.3)', transition: 'color 0.2s', display: 'flex', alignItems: 'center'
+                                                    }}
+                                                    onMouseEnter={(e) => e.currentTarget.style.color = '#ff6464'}
+                                                    onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : isAddingTime && newTimeHour === hour ? (
+                                        <div style={{
+                                            border: '1px solid rgba(0, 243, 255, 0.3)',
+                                            borderRadius: '8px',
+                                            padding: '0.75rem 1rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '1rem',
+                                            backgroundColor: 'rgba(0, 243, 255, 0.05)'
+                                        }}>
+                                            <input
+                                                autoFocus
+                                                type="text"
+                                                placeholder="What will you study?"
+                                                value={newTimeTask}
+                                                onChange={(e) => setNewTimeTask(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleAddTimeTask()}
+                                                style={{
+                                                    flex: 1, background: 'transparent', border: 'none', color: 'white',
+                                                    outline: 'none', fontSize: '0.9rem'
+                                                }}
+                                            />
+                                            <button onClick={handleAddTimeTask} style={{
+                                                background: 'rgba(0, 243, 255, 0.2)', border: 'none', color: '#00f3ff',
+                                                padding: '4px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold'
+                                            }}>Save</button>
+                                            <button onClick={() => setIsAddingTime(false)} style={{
+                                                background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)',
+                                                cursor: 'pointer', display: 'flex'
+                                            }}>
+                                                <X size={16} />
+                                            </button>
                                         </div>
                                     ) : (
                                         <div style={{
@@ -174,6 +305,11 @@ export function TimetableChart() {
                                             fontSize: '0.9rem',
                                             cursor: 'pointer'
                                         }}
+                                            onClick={() => {
+                                                setNewTimeHour(hour);
+                                                setIsAddingTime(true);
+                                                setNewTimeTask('');
+                                            }}
                                             onMouseEnter={(e) => {
                                                 e.currentTarget.style.borderColor = 'rgba(0, 243, 255, 0.5)';
                                                 e.currentTarget.style.color = 'rgba(0, 243, 255, 0.8)';
@@ -197,11 +333,12 @@ export function TimetableChart() {
             {mode === 'task' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {tasks.map((task) => {
-                        const statusStyle = getTaskStatusColor(task.status);
+                        const statusStyle = getTaskStatusColor(task.status, task.id);
                         const priorityStyle = getPriorityTag(task.priority);
 
                         return (
                             <div
+                                onClick={() => toggleGoalTaskStatus(task.id)}
                                 key={task.id}
                                 style={{
                                     padding: '1rem 1.25rem',
@@ -241,44 +378,116 @@ export function TimetableChart() {
                                     </div>
                                 </div>
 
-                                {/* Priority Tag */}
-                                <span style={{
-                                    padding: '0.2rem 0.6rem',
-                                    borderRadius: '4px',
-                                    backgroundColor: priorityStyle.bg,
-                                    color: priorityStyle.text,
-                                    fontSize: '0.75rem',
-                                    fontWeight: '600',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px'
-                                }}>
-                                    {task.priority}
-                                </span>
+                                {/* Priority Tag & Delete */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <span style={{
+                                        padding: '0.2rem 0.6rem',
+                                        borderRadius: '4px',
+                                        backgroundColor: priorityStyle.bg,
+                                        color: priorityStyle.text,
+                                        fontSize: '0.75rem',
+                                        fontWeight: '600',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.5px'
+                                    }}>
+                                        {task.priority}
+                                    </span>
+                                    <button
+                                        onClick={(e) => handleRemoveGoalTask(task.id, e)}
+                                        style={{
+                                            background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px',
+                                            color: 'rgba(255,255,255,0.3)', transition: 'color 0.2s', display: 'flex'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.color = '#ff6464'}
+                                        onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
                             </div>
                         );
                     })}
 
                     {/* Add Task */}
-                    <div style={{
-                        padding: '1rem',
-                        border: '1px dashed rgba(255,255,255,0.1)',
-                        borderRadius: '10px',
-                        textAlign: 'center',
-                        color: 'rgba(255,255,255,0.2)',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease'
-                    }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = 'rgba(138, 43, 226, 0.5)';
-                            e.currentTarget.style.color = 'rgba(138, 43, 226, 0.8)';
+                    {isAddingTask ? (
+                        <div style={{
+                            padding: '1rem',
+                            border: '1px solid rgba(138, 43, 226, 0.4)',
+                            borderRadius: '10px',
+                            backgroundColor: 'rgba(138, 43, 226, 0.05)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '10px'
+                        }}>
+                            <input
+                                autoFocus
+                                type="text"
+                                placeholder="Task description..."
+                                value={newTaskName}
+                                onChange={(e) => setNewTaskName(e.target.value)}
+                                style={{
+                                    background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                                    color: 'white', padding: '8px 12px', borderRadius: '6px', outline: 'none'
+                                }}
+                            />
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <input
+                                    type="text"
+                                    placeholder="Subject (e.g. Math)"
+                                    value={newTaskSubject}
+                                    onChange={(e) => setNewTaskSubject(e.target.value)}
+                                    style={{
+                                        flex: 1, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                                        color: 'white', padding: '8px 12px', borderRadius: '6px', outline: 'none'
+                                    }}
+                                />
+                                <select
+                                    value={newTaskPriority}
+                                    onChange={(e) => setNewTaskPriority(e.target.value)}
+                                    style={{
+                                        background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                                        color: 'rgba(255,255,255,0.8)', padding: '8px 12px', borderRadius: '6px', outline: 'none'
+                                    }}
+                                >
+                                    <option style={{ color: 'black' }} value="high">High</option>
+                                    <option style={{ color: 'black' }} value="medium">Medium</option>
+                                    <option style={{ color: 'black' }} value="low">Low</option>
+                                </select>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '4px' }}>
+                                <button onClick={() => setIsAddingTask(false)} style={{
+                                    background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'white',
+                                    padding: '6px 16px', borderRadius: '6px', cursor: 'pointer'
+                                }}>Cancel</button>
+                                <button onClick={handleAddGoalTask} style={{
+                                    background: 'rgba(138, 43, 226, 0.2)', border: '1px solid rgba(138, 43, 226, 0.5)', color: '#d8b4fe',
+                                    padding: '6px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold'
+                                }}>Save Task</button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div style={{
+                            padding: '1rem',
+                            border: '1px dashed rgba(255,255,255,0.1)',
+                            borderRadius: '10px',
+                            textAlign: 'center',
+                            color: 'rgba(255,255,255,0.2)',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease'
                         }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-                            e.currentTarget.style.color = 'rgba(255,255,255,0.2)';
-                        }}
-                    >
-                        + Add a learning goal
-                    </div>
+                            onClick={() => setIsAddingTask(true)}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = 'rgba(138, 43, 226, 0.5)';
+                                e.currentTarget.style.color = 'rgba(138, 43, 226, 0.8)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                                e.currentTarget.style.color = 'rgba(255,255,255,0.2)';
+                            }}
+                        >
+                            + Add a learning goal
+                        </div>
+                    )}
                 </div>
             )}
         </div>

@@ -11,7 +11,10 @@ import { FocusMode } from './components/features/FocusMode';
 import { VisualSummary } from './components/features/VisualSummary';
 import { ImageFeedback } from './components/features/ImageFeedback';
 import { PeerCollab } from './components/features/PeerCollab';
+import { Leaderboard } from './components/features/Leaderboard';
 import { FloatingAI } from './components/features/FloatingAI';
+import { AuthOverlay } from './components/features/AuthOverlay';
+import { SettingsModal } from './components/features/SettingsModal';
 import gsap from 'gsap';
 
 function Section({ id, children }) {
@@ -44,7 +47,25 @@ function Section({ id, children }) {
 }
 
 function App() {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [userProfile, setUserProfile] = useState(null);
     const [activeSection, setActiveSection] = useState('roadmap');
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+    // Global Gamification State
+    const [userScore, setUserScore] = useState({
+        consistency: 5,
+        activity: 12,
+        answers: 28,
+        activeCourses: 3,
+    });
+
+    const handleScoreUpdate = (type) => {
+        setUserScore(prev => ({
+            ...prev,
+            [type]: prev[type] + 1
+        }));
+    };
 
     const handleNavigate = (sectionId) => {
         setActiveSection(sectionId);
@@ -55,7 +76,7 @@ function App() {
     };
 
     useEffect(() => {
-        const sections = ['roadmap', 'schedule', 'focus', 'visual', 'errors', 'photo', 'collab'];
+        const sections = ['roadmap', 'schedule', 'focus', 'visual', 'errors', 'photo', 'collab', 'leaderboard'];
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -74,7 +95,28 @@ function App() {
 
     return (
         <>
-            <Sidebar activeSection={activeSection} onNavigate={handleNavigate} />
+            {!isAuthenticated && (
+                <AuthOverlay onLogin={(userData) => {
+                    setUserProfile(userData);
+                    setIsAuthenticated(true);
+                }} />
+            )}
+
+            <Sidebar
+                activeSection={activeSection}
+                onNavigate={handleNavigate}
+                userProfile={userProfile}
+                onLogout={() => {
+                    setIsAuthenticated(false);
+                    setUserProfile(null);
+                }}
+                onOpenSettings={() => setIsSettingsOpen(true)}
+            />
+            {isSettingsOpen && <SettingsModal
+                onClose={() => setIsSettingsOpen(false)}
+                userProfile={userProfile}
+                userScore={userScore}
+            />}
             <MotivationAgent />
             <FloatingAI />
 
@@ -167,13 +209,14 @@ function App() {
                 {/* 7: Peer Collaboration */}
                 <Section id="collab">
                     <div style={{ width: '100%', maxWidth: '1000px' }}>
-                        <h2 className="intelligence-glow" style={{ fontSize: '3.5vw', color: 'white' }}>
-                            Learn Together
-                        </h2>
-                        <p style={{ maxWidth: '600px', fontSize: '1.2rem', marginTop: '1rem', marginBottom: '2rem' }}>
-                            AI gives you a solid starting answer. Peers add real-world examples and insights. The best contributions rise to the top.
-                        </p>
-                        <PeerCollab />
+                        <PeerCollab onScoreUpdate={handleScoreUpdate} />
+                    </div>
+                </Section>
+
+                {/* 8: Leaderboard */}
+                <Section id="leaderboard">
+                    <div style={{ width: '100%', maxWidth: '1000px' }}>
+                        <Leaderboard userScore={userScore} />
                     </div>
                 </Section>
             </div>
