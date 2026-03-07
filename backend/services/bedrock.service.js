@@ -48,20 +48,46 @@ export function isBedrockConfigured() {
  * @returns {Promise<string>} - Generated text response
  */
 export async function callBedrock(modelId, system, messages, maxTokens = 1024) {
-    console.log(`📡 Calling Bedrock: model=${modelId}`);
+    console.log(`📡 Calling Bedrock: model=${modelId}, messages=${messages.length}`);
 
-    // Amazon Nova uses the "messages" API format
     const requestBody = {
-        messages: messages.map((msg) => ({
-            role: msg.role,
-            content: [{ text: msg.content }],
-        })),
-        system: [{ text: system }],
-        inferenceConfig: {
-            maxNewTokens: maxTokens,
-            temperature: 0.7,
-        },
+        messages: messages.map((msg) => {
+            const contentBlock = [];
+
+            // Text block (guard against empty strings which cause errors)
+            if (msg.content && msg.content.trim()) {
+                contentBlock.push({ text: msg.content });
+            }
+
+            // Vision block: embed base64 image if provided
+            if (msg.image && msg.image.base64 && msg.image.format) {
+                let format = msg.image.format.toLowerCase();
+                if (format === 'jpg') format = 'jpeg';
+                if (!['jpeg', 'png', 'gif', 'webp'].includes(format)) format = 'jpeg';
+
+                contentBlock.push({
+                    image: {
+                        format: format,
+                        source: { bytes: msg.image.base64 }
+                    }
+                });
+            }
+
+            // Safety: always ensure at least a text block exists to avoid Nova rejection 
+            if (contentBlock.length === 0) {
+                contentBlock.push({ text: '(no content)' });
+            }
+
+            return { role: msg.role, content: contentBlock };
+        })
     };
+
+    // Only attach system if it's non-empty
+    if (system && system.trim()) {
+        requestBody.system = [{ text: system }];
+    }
+
+    console.log('📤 Bedrock request body preview:', JSON.stringify(requestBody).slice(0, 300));
 
     const command = new InvokeModelCommand({
         modelId,
@@ -71,17 +97,16 @@ export async function callBedrock(modelId, system, messages, maxTokens = 1024) {
     });
 
     const response = await bedrockClient.send(command);
-
-    // Parse the response body
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
 
-    // Amazon Nova response format
+    console.log('📥 Bedrock response keys:', Object.keys(responseBody));
+
     if (responseBody.output?.message?.content?.[0]?.text) {
         const text = responseBody.output.message.content[0].text;
-        console.log('✅ Bedrock response received');
+        console.log('✅ Bedrock response OK, length:', text.length);
         return text;
     }
 
-    console.error('❌ Unexpected Bedrock response format:', JSON.stringify(responseBody));
-    throw new Error('Unexpected Bedrock response format');
+    console.error('❌ Unexpected Bedrock response format:', JSON.stringify(responseBody).slice(0, 500));
+    throw new Error('Unexpected Bedrock response format: ' + JSON.stringify(responseBody).slice(0, 200));
 }

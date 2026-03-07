@@ -23,12 +23,27 @@ export function ImageFeedback() {
         setFeedback(null);
 
         try {
+            const savedAI = localStorage.getItem('synapse_ai_settings');
+            const aiSettings = savedAI ? JSON.parse(savedAI) : { useOllama: true, useBedrock: false };
+
+            const toBase64 = (f) => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(f);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+            const base64Image = await toBase64(file);
+            const imageType = file.type || 'image/jpeg';
+
             const response = await fetch('/api/photo-review', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    imageFile: file.name, // send metadata since qwen is text-only
-                    context: "Please review this math assignment or code diagram and provide constructive feedback."
+                    imageFile: file.name,
+                    base64Image,
+                    imageType,
+                    context: "Please review this math assignment or code diagram and provide constructive feedback.",
+                    aiSettings
                 })
             });
             if (!response.ok) throw new Error('Failed to analyze');

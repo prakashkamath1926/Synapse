@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Settings, Map as MapIcon, Database, Bell, User, Target, Flame, MessageSquare, Zap, Camera, BookOpen } from 'lucide-react';
+import { X, Settings, Map as MapIcon, Database, Bell, User, Target, Flame, MessageSquare, Zap, Camera, BookOpen, Cpu, Cloud } from 'lucide-react';
 import gsap from 'gsap';
 
 export function SettingsModal({ onClose, userProfile, userScore }) {
     const [activeTab, setActiveTab] = useState('profile');
 
-    // Mock Settings State
-    const [settings, setSettings] = useState({
-        smartRouting: true,
-        studyBreakAlerts: true,
-        mistakeInsights: false,
-        autoSave: true,
+    const [settings, setSettings] = useState(() => {
+        const savedAI = localStorage.getItem('synapse_ai_settings');
+        return {
+            smartRouting: true,
+            studyBreakAlerts: true,
+            mistakeInsights: false,
+            autoSave: true,
+            aiEngines: savedAI ? JSON.parse(savedAI) : { useOllama: true, useBedrock: true }
+        };
     });
 
     const overlayRef = useRef(null);
@@ -39,12 +42,20 @@ export function SettingsModal({ onClose, userProfile, userScore }) {
         });
     };
 
-    const toggleSetting = (key) => {
-        setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+    const toggleSetting = (key, isAiSetting = false) => {
+        setSettings(prev => {
+            if (isAiSetting) {
+                const newAiSettings = { ...prev.aiEngines, [key]: !prev.aiEngines[key] };
+                localStorage.setItem('synapse_ai_settings', JSON.stringify(newAiSettings));
+                return { ...prev, aiEngines: newAiSettings };
+            }
+            return { ...prev, [key]: !prev[key] };
+        });
     };
 
     const TABS = [
         { id: 'profile', label: 'Profile', icon: User },
+        { id: 'ai', label: 'AI Engines', icon: Cpu },
         { id: 'general', label: 'General', icon: Settings },
         { id: 'notifications', label: 'Notifications', icon: Bell },
         { id: 'data', label: 'Data & Privacy', icon: Database },
@@ -250,6 +261,43 @@ export function SettingsModal({ onClose, userProfile, userScore }) {
                                     </div>
                                 </div>
 
+                            </div>
+                        )}
+
+                        {activeTab === 'ai' && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                                    <Cpu size={24} color="#00f3ff" />
+                                    <h3 style={{ color: '#00f3ff', fontSize: '1.25rem', margin: 0, fontWeight: '700' }}>AI Providers</h3>
+                                </div>
+
+                                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                                    Configure which Artificial Intelligence engines power your Synapse experience.
+                                    (Note: Photo Review strictly utilizes Amazon Bedrock's computer vision.)
+                                </p>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    <ToggleSwitch
+                                        label="Local AI (Ollama)"
+                                        description="Run privacy-first open source models precisely on your own hardware."
+                                        checked={settings.aiEngines.useOllama}
+                                        onChange={() => toggleSetting('useOllama', true)}
+                                    />
+
+                                    <ToggleSwitch
+                                        label="Cloud AI (AWS Bedrock)"
+                                        description="Fallback to Amazon Nova instances if local engines are disabled or under heavy load."
+                                        checked={settings.aiEngines.useBedrock}
+                                        onChange={() => toggleSetting('useBedrock', true)}
+                                    />
+                                </div>
+
+                                {(!settings.aiEngines.useOllama && !settings.aiEngines.useBedrock) && (
+                                    <div style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'rgba(255, 68, 68, 0.1)', border: '1px solid rgba(255, 68, 68, 0.3)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                        <AlertCircle size={20} color="#ff4444" />
+                                        <p style={{ margin: 0, color: '#ff4444', fontSize: '0.9rem' }}>Both AI providers are disabled. Chat and Roadmap generation will fail.</p>
+                                    </div>
+                                )}
                             </div>
                         )}
 

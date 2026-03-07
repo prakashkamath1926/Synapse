@@ -23,10 +23,13 @@ export function RoadmapGenerator() {
         setRoadmap(null);
 
         try {
+            const savedAI = localStorage.getItem('synapse_ai_settings');
+            const aiSettings = savedAI ? JSON.parse(savedAI) : { useOllama: true, useBedrock: false };
+
             const response = await fetch('/api/roadmap', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ goal })
+                body: JSON.stringify({ goal, aiSettings })
             });
 
             if (!response.ok) throw new Error('API error');
