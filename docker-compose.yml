@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: synapse-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+
+  # This service ensures the qwen3:8b model is pulled on startup
+  ollama-init:
+    image: curlimages/curl:latest
+    container_name: synapse-ollama-init
+    depends_on:
+      - ollama
+    restart: "no"
+    command: >
+      sh -c '
+        echo "Waiting for Ollama to be ready..."
+        while ! curl -s http://ollama:11434/api/tags > /dev/null; do
+          sleep 2
+        done
+        echo "Ollama is ready! Pulling model qwen3:8b (this may take a few minutes)..."
+        curl -s -X POST http://ollama:11434/api/pull -d "{\"name\": \"qwen3:8b\"}"
+        echo "Model pulled successfully!"
+      '
+
+volumes:
+  ollama_data:

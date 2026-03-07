@@ -1,0 +1,44 @@
+{
+  "id": "gen-1772719319-nmEKcFMEggVciye8nuqZ",
+  "object": "chat.completion",
+  "created": 1772719319,
+  "model": "google/gemma-3-4b-it:free",
+  "provider": "Google AI Studio",
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "STOP",
+      "message": {
+        "role": "assistant",
+        "content": "```json\n{\n  \"roadmapTitle\": \"React Developer Roadmap\",\n  \"description\": \"A structured guide for becoming a proficient React developer, broken down into stages with estimated time commitments.\",\n  \"stages\": [\n    {\n      \"stageName\": \"Fundamentals (2-4 Weeks)\",\n      \"description\": \"Establish a strong foundation in JavaScript and related concepts.\",\n      \"topics\": [\n        \"JavaScript Basics (ES6+): Variables, Data Types, Functions, Objects, Arrays, Closures, Arrow Functions\",\n        \"DOM Manipulation: Understanding the Document Object Model\",\n        \"HTML & CSS Basics: Structure, Styling, Responsive Design\",\n        \"Version Control with Git: Branching, Committing, Pull Requests\",\n        \"Command Line Basics: Navigating directories, running commands\"\n      ],\n      \"resources\": [\n        \"MDN JavaScript Documentation: https://developer.mozilla.org/en-US/docs/Web/JavaScript\",\n        \"freeCodeCamp JavaScript Algorithms and Data Structures Certification: https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/\",\n        \"Git Tutorial: https://git-scm.com/docs/gittutorial\"\n      ]\n    },\n    {\n      \"stageName\": \"React Basics (4-8 Weeks)\",\n      \"description\": \"Learn the core concepts of React and build simple components.\",\n      \"topics\": [\n        \"Introduction to React: Components, JSX, Props, State\",\n        \"Component Lifecycle Methods\",\n        \"Handling Events\",\n        \"Conditional Rendering\",\n        \"Lists and Keys\",\n        \"Forms and Controlled Components\",\n        \"React Hooks (useState, useEffect): Introduction and basic usage\"\n      ],\n      \"resources\": [\n        \"React Official Documentation: https://react.dev/\",\n        \"Scrimba React Course: https://scrimba.com/learn/learnreact\",\n        \"Codecademy React Course: https://www.codecademy.com/learn/react\"\n      ]\n    },\n    {\n      \"stageName\": \"Intermediate React (8-12 Weeks)\",\n      \"description\": \"Dive deeper into React concepts and build more complex applications.\",\n      \"topics\": [\n        \"React Router: Navigation between pages\",\n        \"State Management (Context API, Redux, or Zustand): Choosing and implementing a state management solution\",\n        \"Fetching Data with APIs (useEffect, Axios or Fetch): Handling asynchronous requests\",\n        \"Styling React Components (CSS Modules, Styled Components, Material-UI): Choosing a styling approach\",\n        \"Testing with Jest and React Testing Library: Writing unit and integration tests\",\n        \"Higher-Order Components (HOCs) and Render Props (Optional)\"\n      ],\n      \"resources\": [\n        \"Redux Documentation: https://redux.js.org/\",\n        \"Zustand Documentation: https://zustand.dev/\",\n        \"Axios Documentation: https://axios-http.com/\",\n        \"Jest Documentation: https://jestjs.io/\",\n        \"React Testing Library Documentation: https://testing-library.com/\"\n      ]\n    },\n    {\n      \"stageName\": \"Advanced React (12+ Weeks)\",\n      \"description\": \"Explore advanced topics and build scalable applications.\",\n      \"topics\": [\n        \"Performance Optimization: Memoization, Code Splitting, Lazy Loading\",\n        \"TypeScript with React: Adding static typing to your React applications\",\n        \"Server-Side Rendering (SSR) with Next.js or Remix\",\n        \"GraphQL with Apollo Client\",\n        \"Advanced State Management Techniques (Redux Toolkit, MobX)\",\n        \"Custom Hooks\",\n        \"Design Patterns in React\",\n        \"Accessibility (ARIA, WCAG)\"\n      ],\n      \"resources\": [\n        \"Next.js Documentation: https://nextjs.org/\",\n        \"Remix Documentation: https://remix.run/\",\n        \"Apollo Client Documentation: https://www.apollographql.com/\",\n        \"TypeScript Documentation: https://www.typescriptlang.org/\"\n      ]\n    },\n    {\n      \"stageName\": \"Portfolio & Continuous Learning (Ongoing)\",\n      \"description\": \"Build projects to showcase your skills and stay up-to-date with the latest trends.\",\n      \"topics\": [\n        \"Contribute to Open Source Projects\",\n        \"Build Personal Projects\",\n        \"Stay Updated with React Updates and New Libraries\",\n        \"Explore Different React Ecosystems (e.g., Material UI, Ant Design)\"\n      ],\n      \"resources\": [\n        \"GitHub: https://github.com/\",\n        \"Stack Overflow: https://stackoverflow.com/\",\n        \"React Blog: https://react.dev/blog\"\n      ]\n    }\n  ]\n}\n```",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 13,
+    "completion_tokens": 0,
+    "total_tokens": 13,
+    "cost": 0,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0,
+      "upstream_inference_prompt_cost": 0,
+      "upstream_inference_completions_cost": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}
