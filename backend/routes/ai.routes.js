@@ -45,9 +45,18 @@ router.post('/photo-review', async (req, res, next) => {
 // 4. Chat (simple JSON, no streaming)
 router.post('/chat', async (req, res, next) => {
     try {
-        // AIAssistant payload is slightly different; using 'messages' instead of message/history
-        const { messages, aiSettings } = req.body;
-        if (!messages) return res.status(400).json({ error: 'Messages are required' });
+        // Support both new format ({ messages, aiSettings }) and old format ({ message, history })
+        let { messages, message, history, aiSettings } = req.body;
+
+        if (!messages && message) {
+            // Convert old format to new format
+            messages = [...(history || []), { role: 'user', text: message }];
+        }
+
+        if (!messages || messages.length === 0) {
+            return res.status(400).json({ error: 'messages are required' });
+        }
+
         const result = await chatWithAssistant(messages, aiSettings);
         res.json(result);
     } catch (error) {

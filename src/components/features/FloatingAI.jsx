@@ -76,13 +76,18 @@ export function FloatingAI() {
         setIsLoading(true);
 
         try {
+            const savedAI = localStorage.getItem('synapse_ai_settings');
+            const aiSettings = savedAI ? JSON.parse(savedAI) : { useOllama: true, useBedrock: false };
+
+            const chatMessages = [
+                ...messages.slice(-6),
+                { role: 'user', text: userMessage }
+            ];
+
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: userMessage,
-                    history: messages.slice(-6)
-                })
+                body: JSON.stringify({ messages: chatMessages, aiSettings })
             });
 
             if (!response.ok) throw new Error('API error');

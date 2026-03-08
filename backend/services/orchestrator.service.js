@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import { callBedrock, BEDROCK_MODELS, isBedrockConfigured } from './bedrock.service.js';
+import { uploadVisualSummaryToS3 } from './s3.service.js';
 dotenv.config();
 
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
@@ -210,6 +211,10 @@ Return EXACTLY this JSON structure, and absolutely nothing else:
     }
 
     console.log(`✅ Visual Summary generated for "${topic}"`);
+
+    // Upload to Amazon S3
+    await uploadVisualSummaryToS3(topic, parsed);
+
     return parsed;
 };
 

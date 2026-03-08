@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Settings, Map as MapIcon, Database, Bell, User, Target, Flame, MessageSquare, Zap, Camera, BookOpen, Cpu, Cloud } from 'lucide-react';
+import { X, Settings, Map as MapIcon, Database, Bell, User, Target, Flame, MessageSquare, Zap, Camera, BookOpen, Cpu, Cloud, AlertCircle } from 'lucide-react';
 import gsap from 'gsap';
 
 export function SettingsModal({ onClose, userProfile, userScore }) {
