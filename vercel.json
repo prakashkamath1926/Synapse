@@ -1,12 +1,16 @@
 {
-    "rewrites": [
+    "routes": [
+        { "handle": "filesystem" },
         {
-            "source": "/api/:path*",
-            "destination": "http://50.19.91.204:8000/api/:path*"
+            "src": "/api/(.*)",
+            "dest": "/api/$1"
         },
         {
-            "source": "/(.*)",
-            "destination": "/index.html"
+            "src": "/(.*)",
+            "dest": "/index.html"
         }
-    ]
+    ],
+    "env": {
+        "BACKEND_URL": "http://50.19.91.204:8000"
+    }
 }
