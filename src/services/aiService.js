@@ -1,7 +1,7 @@
 // Synapse AI API Service — connects to Express backend via Vite proxy
 // Vite proxies /api → http://localhost:5000/api (configured in vite.config.js)
 
-const API_URL = '/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 
 async function apiRequest(endpoint, body) {
