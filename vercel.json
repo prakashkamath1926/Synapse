@@ -10,6 +10,6 @@
         }
     ],
     "env": {
-        "BACKEND_URL": "http://50.19.91.204:8000"
+        "BACKEND_URL": "https://synapse-50ji.onrender.com"
     }
 }

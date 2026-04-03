@@ -12,7 +12,7 @@ export function SettingsModal({ onClose, userProfile, userScore }) {
             studyBreakAlerts: true,
             mistakeInsights: false,
             autoSave: true,
-            aiEngines: savedAI ? JSON.parse(savedAI) : { useOllama: true, useBedrock: true }
+            aiEngines: savedAI ? JSON.parse(savedAI) : { useOllama: false, useBedrock: true }
         };
     });
 

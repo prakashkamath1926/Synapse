@@ -77,7 +77,7 @@ export function FloatingAI() {
 
         try {
             const savedAI = localStorage.getItem('synapse_ai_settings');
-            const aiSettings = savedAI ? JSON.parse(savedAI) : { useOllama: true, useBedrock: false };
+            const aiSettings = savedAI ? JSON.parse(savedAI) : { useOllama: false, useBedrock: true };
 
             const chatMessages = [
                 ...messages.slice(-6),

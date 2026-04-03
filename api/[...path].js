@@ -1,7 +1,7 @@
 // Vercel serverless catch-all proxy → remote FastAPI backend
 // This handles all /api/* routes since Vercel Free cannot rewrite to external URLs
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://50.19.91.204:8000';
+const BACKEND_URL = process.env.BACKEND_URL || 'https://synapse-50ji.onrender.com';
 
 export default async function handler(req, res) {
   const { path = [] } = req.query;
