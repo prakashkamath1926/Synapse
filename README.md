@@ -138,7 +138,7 @@ node server.js
 Server runs at:
 
 ```
-http://localhost:5000
+https://synapse-five-delta.vercel.app
 ```
 
 ---
